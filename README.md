@@ -1,4 +1,4 @@
-# Welcome to Remix + Vite!
+# remix-wedges-boilerplate
 
 📖 See the [Remix docs](https://remix.run/docs) and the [Remix Vite docs](https://remix.run/docs/en/main/guides/vite) for details on supported features.
 
