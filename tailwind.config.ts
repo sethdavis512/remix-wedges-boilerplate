@@ -10,5 +10,5 @@ export default {
         extend: {},
     },
     darkMode: 'class',
-    plugins: [wedgesTW()],
+    plugins: [wedgesTW(), require('tailwindcss-animate')],
 } satisfies Config;
