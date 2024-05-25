@@ -1,34 +1,30 @@
 import {
+    SignInButton,
     SignOutButton,
+    SignUpButton,
     SignedIn,
     SignedOut,
     UserButton,
     useUser,
 } from '@clerk/remix';
-import { getAuth } from '@clerk/remix/ssr.server';
 import { getInputProps, getTextareaProps, useForm } from '@conform-to/react';
 import { getZodConstraint, parseWithZod } from '@conform-to/zod';
 import { Button, Input, Textarea } from '@lemonsqueezy/wedges';
-import {
-    LoaderFunctionArgs,
-    type ActionFunctionArgs,
-    type MetaFunction,
-} from '@remix-run/node';
+import { type ActionFunctionArgs, type MetaFunction } from '@remix-run/node';
 import {
     Form,
-    json,
-    redirect,
     useActionData,
     useFetcher,
     useRouteLoaderData,
 } from '@remix-run/react';
-import { Moon, Sun } from 'lucide-react';
+import { Moon, Sun, ZapIcon } from 'lucide-react';
+
 import Flex from '~/components/Flex';
 import Heading from '~/components/Heading';
-import Skeleton from '~/components/Skeleton';
 import { RootLoaderResponse } from '~/root';
 import { contactUsSchema } from '~/schemas';
 import { Theme } from '~/utils/theme';
+import heroImage from '../images/intricate-explorer-iXn9QlSV2wA-unsplash.jpg';
 
 export const meta: MetaFunction = () => {
     return [
@@ -36,16 +32,6 @@ export const meta: MetaFunction = () => {
         { name: 'description', content: 'Welcome to Remix!' },
     ];
 };
-
-export async function loader(args: LoaderFunctionArgs) {
-    const { userId } = await getAuth(args);
-
-    if (!userId) {
-        return redirect('/sign-in');
-    }
-
-    return json({});
-}
 
 export async function action({ request }: ActionFunctionArgs) {
     const formData = await request.formData();
@@ -88,73 +74,98 @@ export default function Index() {
     return (
         <div className="container mx-auto max-w-3xl p-4">
             <Flex className="mb-8 justify-between">
-                <themeFetcher.Form method="POST" action="/api/theme">
-                    <Button
-                        className="p-2"
-                        variant="outline"
-                        type="submit"
-                        name="themeSelection"
-                        value={themeDisplay}
-                        aria-label={`Toggle theme to ${themeDisplay} theme`}
-                    >
-                        <span className="sr-only">
-                            Toggle to {themeDisplay} theme
-                        </span>
-                        {isThemeDark ? <Moon /> : <Sun />}
-                    </Button>
-                </themeFetcher.Form>
-                <SignedIn>
-                    <Flex>
-                        <UserButton />
-                        <SignOutButton>
-                            <Button variant="outline">Sign out</Button>
-                        </SignOutButton>
-                    </Flex>
-                </SignedIn>
-            </Flex>
-            <Heading as="h1" className="text-4xl font-black">
-                Hello{' '}
-                {userData.user ? userData.user?.firstName : <Skeleton isText />}
-                !
-            </Heading>
-            <Form
-                method="POST"
-                className="space-y-4"
-                id={form.id}
-                onSubmit={form.onSubmit}
-                aria-invalid={form.errors ? true : undefined}
-                aria-describedby={form.errors ? form.errorId : undefined}
-            >
-                <div id={form.errorId}>{form.errors}</div>
-                <Input
-                    {...getInputProps(fields.email, { type: 'email' })}
-                    description="Add your email"
-                    label="Email"
-                    placeholder="Email"
-                    required
-                    helperText={
-                        <div id={fields.email.errorId} className="text-red-500">
-                            {fields.email.errors}
-                        </div>
-                    }
-                />
-                <Textarea
-                    {...getTextareaProps(fields.message)}
-                    description="Add your message"
-                    label="Message"
-                    placeholder="Message"
-                    required
-                    helperText={
-                        <div
-                            id={fields.message.errorId}
-                            className="text-red-500"
+                <div>
+                    <ZapIcon />
+                </div>
+                <Flex>
+                    <SignedIn>
+                        <Flex>
+                            <UserButton />
+                            <SignOutButton>
+                                <Button variant="outline">Sign out</Button>
+                            </SignOutButton>
+                        </Flex>
+                    </SignedIn>
+                    <SignedOut>
+                        <SignUpButton>
+                            <Button variant="outline">Sign up</Button>
+                        </SignUpButton>
+                        <SignInButton>
+                            <Button variant="outline">Sign in</Button>
+                        </SignInButton>
+                    </SignedOut>
+                    <themeFetcher.Form method="POST" action="/api/theme">
+                        <Button
+                            className="p-2"
+                            variant="outline"
+                            type="submit"
+                            name="themeSelection"
+                            value={themeDisplay}
+                            aria-label={`Toggle theme to ${themeDisplay} theme`}
                         >
-                            {fields.message.errors}
-                        </div>
-                    }
+                            <span className="sr-only">
+                                Toggle to {themeDisplay} theme
+                            </span>
+                            {isThemeDark ? <Moon /> : <Sun />}
+                        </Button>
+                    </themeFetcher.Form>
+                </Flex>
+            </Flex>
+            <Heading as="h1" className="mb-8 text-4xl font-black">
+                {userData.user
+                    ? `Hello ${userData.user?.firstName ? userData.user?.firstName : 'friend'}!`
+                    : 'Welcome'}
+            </Heading>
+            <SignedIn>
+                <Form
+                    method="POST"
+                    className="space-y-4"
+                    id={form.id}
+                    onSubmit={form.onSubmit}
+                    aria-invalid={form.errors ? true : undefined}
+                    aria-describedby={form.errors ? form.errorId : undefined}
+                >
+                    <div id={form.errorId}>{form.errors}</div>
+                    <Input
+                        {...getInputProps(fields.email, { type: 'email' })}
+                        description="Add your email"
+                        label="Email"
+                        placeholder="Email"
+                        required
+                        helperText={
+                            <div
+                                id={fields.email.errorId}
+                                className="text-red-500"
+                            >
+                                {fields.email.errors}
+                            </div>
+                        }
+                    />
+                    <Textarea
+                        {...getTextareaProps(fields.message)}
+                        description="Add your message"
+                        label="Message"
+                        placeholder="Message"
+                        required
+                        helperText={
+                            <div
+                                id={fields.message.errorId}
+                                className="text-red-500"
+                            >
+                                {fields.message.errors}
+                            </div>
+                        }
+                    />
+                    <Button type="submit">Send</Button>
+                </Form>
+            </SignedIn>
+            <SignedOut>
+                <img
+                    src={heroImage}
+                    className="w-full"
+                    alt="Spiraling parking garage ramp"
                 />
-                <Button type="submit">Send</Button>
-            </Form>
+            </SignedOut>
         </div>
     );
 }

@@ -20,17 +20,11 @@ export default function Skeleton({
     return (
         <Component
             role="status"
-            className={cx('animate-pulse', isText && 'inline-block')}
+            className={cx('max-w-80 animate-pulse', isText && 'inline-block')}
         >
             {isText ? (
-                <span
-                    className={cx(
-                        sharedClasses,
-                        'inline-block text-inherit',
-                        className
-                    )}
-                >
-                    <span className="inline-block min-w-36">&nbsp;</span>
+                <span className={cx(sharedClasses, 'text-inherit', className)}>
+                    <span className="inline-block min-w-48">&nbsp;</span>
                     <span className="sr-only">Loading...</span>
                 </span>
             ) : (
