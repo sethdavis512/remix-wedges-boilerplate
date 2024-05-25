@@ -1,14 +1,31 @@
+import {
+    SignOutButton,
+    SignedIn,
+    SignedOut,
+    UserButton,
+    useUser,
+} from '@clerk/remix';
+import { getAuth } from '@clerk/remix/ssr.server';
 import { getInputProps, getTextareaProps, useForm } from '@conform-to/react';
 import { getZodConstraint, parseWithZod } from '@conform-to/zod';
 import { Button, Input, Textarea } from '@lemonsqueezy/wedges';
-import { type ActionFunctionArgs, type MetaFunction } from '@remix-run/node';
+import {
+    LoaderFunctionArgs,
+    type ActionFunctionArgs,
+    type MetaFunction,
+} from '@remix-run/node';
 import {
     Form,
+    json,
+    redirect,
     useActionData,
     useFetcher,
     useRouteLoaderData,
 } from '@remix-run/react';
 import { Moon, Sun } from 'lucide-react';
+import Flex from '~/components/Flex';
+import Heading from '~/components/Heading';
+import Skeleton from '~/components/Skeleton';
 import { RootLoaderResponse } from '~/root';
 import { contactUsSchema } from '~/schemas';
 import { Theme } from '~/utils/theme';
@@ -19,6 +36,16 @@ export const meta: MetaFunction = () => {
         { name: 'description', content: 'Welcome to Remix!' },
     ];
 };
+
+export async function loader(args: LoaderFunctionArgs) {
+    const { userId } = await getAuth(args);
+
+    if (!userId) {
+        return redirect('/sign-in');
+    }
+
+    return json({});
+}
 
 export async function action({ request }: ActionFunctionArgs) {
     const formData = await request.formData();
@@ -56,29 +83,40 @@ export default function Index() {
     const rootData = useRouteLoaderData<RootLoaderResponse>('root');
     const isThemeDark = rootData?.theme === Theme.DARK;
     const themeDisplay = isThemeDark ? Theme.LIGHT : Theme.DARK;
+    const userData = useUser();
 
     return (
         <div className="container mx-auto max-w-3xl p-4">
-            <themeFetcher.Form
-                method="POST"
-                action="/api/theme"
-                className="mb-4"
-            >
-                <Button
-                    className="p-2"
-                    variant="outline"
-                    type="submit"
-                    name="themeSelection"
-                    value={themeDisplay}
-                    aria-label={`Toggle theme to ${themeDisplay} theme`}
-                >
-                    <span className="sr-only">
-                        Toggle to {themeDisplay} theme
-                    </span>
-                    {isThemeDark ? <Moon /> : <Sun />}
-                </Button>
-            </themeFetcher.Form>
-            <h1 className="text-4xl font-black">Hello internet</h1>
+            <Flex className="mb-8 justify-between">
+                <themeFetcher.Form method="POST" action="/api/theme">
+                    <Button
+                        className="p-2"
+                        variant="outline"
+                        type="submit"
+                        name="themeSelection"
+                        value={themeDisplay}
+                        aria-label={`Toggle theme to ${themeDisplay} theme`}
+                    >
+                        <span className="sr-only">
+                            Toggle to {themeDisplay} theme
+                        </span>
+                        {isThemeDark ? <Moon /> : <Sun />}
+                    </Button>
+                </themeFetcher.Form>
+                <SignedIn>
+                    <Flex>
+                        <UserButton />
+                        <SignOutButton>
+                            <Button variant="outline">Sign out</Button>
+                        </SignOutButton>
+                    </Flex>
+                </SignedIn>
+            </Flex>
+            <Heading as="h1" className="text-4xl font-black">
+                Hello{' '}
+                {userData.user ? userData.user?.firstName : <Skeleton isText />}
+                !
+            </Heading>
             <Form
                 method="POST"
                 className="space-y-4"
