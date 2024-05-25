@@ -2,8 +2,16 @@ import { getInputProps, getTextareaProps, useForm } from '@conform-to/react';
 import { getZodConstraint, parseWithZod } from '@conform-to/zod';
 import { Button, Input, Textarea } from '@lemonsqueezy/wedges';
 import { type ActionFunctionArgs, type MetaFunction } from '@remix-run/node';
-import { Form, useActionData } from '@remix-run/react';
+import {
+    Form,
+    useActionData,
+    useFetcher,
+    useRouteLoaderData,
+} from '@remix-run/react';
+import { Moon, Sun } from 'lucide-react';
+import { RootLoaderResponse } from '~/root';
 import { contactUsSchema } from '~/schemas';
+import { Theme } from '~/utils/theme';
 
 export const meta: MetaFunction = () => {
     return [
@@ -44,10 +52,33 @@ export default function Index() {
             return parseWithZod(formData, { schema: contactUsSchema });
         },
     });
+    const themeFetcher = useFetcher();
+    const rootData = useRouteLoaderData<RootLoaderResponse>('root');
+    const isThemeDark = rootData?.theme === Theme.DARK;
+    const themeDisplay = isThemeDark ? Theme.LIGHT : Theme.DARK;
 
     return (
-        <div className="container p-4">
-            <h1 className="text-4xl font-black">Hello internet.</h1>
+        <div className="container mx-auto max-w-3xl p-4">
+            <themeFetcher.Form
+                method="POST"
+                action="/api/theme"
+                className="mb-4"
+            >
+                <Button
+                    className="p-2"
+                    variant="outline"
+                    type="submit"
+                    name="themeSelection"
+                    value={themeDisplay}
+                    aria-label={`Toggle theme to ${themeDisplay} theme`}
+                >
+                    <span className="sr-only">
+                        Toggle to {themeDisplay} theme
+                    </span>
+                    {isThemeDark ? <Moon /> : <Sun />}
+                </Button>
+            </themeFetcher.Form>
+            <h1 className="text-4xl font-black">Hello internet</h1>
             <Form
                 method="POST"
                 className="space-y-4"
