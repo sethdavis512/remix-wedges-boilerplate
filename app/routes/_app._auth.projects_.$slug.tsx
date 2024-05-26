@@ -16,9 +16,6 @@ export async function loader({ params }: LoaderFunctionArgs) {
             where: {
                 slug,
             },
-            include: {
-                User: true,
-            },
         }),
     });
 }
@@ -32,7 +29,7 @@ export default function ProjectDetailsRoute() {
                 {project?.name}
             </Heading>
             <Heading as="h3" size="3" className="mb-8 text-4xl font-black">
-                {project?.User?.email}
+                {project?.userId}
             </Heading>
             <Flex>
                 <Button asChild>
