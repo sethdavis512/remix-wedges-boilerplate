@@ -1,15 +1,37 @@
-import { getInputProps, useForm } from '@conform-to/react';
+import { getFormProps, getInputProps, useForm } from '@conform-to/react';
 import { getZodConstraint, parseWithZod } from '@conform-to/zod';
 import { Button, Input } from '@lemonsqueezy/wedges';
-import type { ActionFunctionArgs } from '@remix-run/node';
-import { Form, redirect, useActionData } from '@remix-run/react';
+import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
+import {
+    Form,
+    json,
+    redirect,
+    useActionData,
+    useLoaderData,
+} from '@remix-run/react';
 import kebabCase from 'lodash/kebabCase';
-import Heading from '~/components/Heading';
+import invariant from 'tiny-invariant';
 
+import Heading from '~/components/Heading';
 import { prisma } from '~/db.server';
 import { newProjectSchema } from '~/schemas';
 
-export async function action({ request }: ActionFunctionArgs) {
+export async function loader({ params }: LoaderFunctionArgs) {
+    const { slug } = params;
+    invariant(slug, 'Slug not found');
+
+    const project = await prisma.project.findFirst({
+        where: {
+            slug,
+        },
+    });
+
+    return json({
+        project,
+    });
+}
+
+export async function action({ request, params }: ActionFunctionArgs) {
     const formData = await request.formData();
     const submission = parseWithZod(formData, { schema: newProjectSchema });
 
@@ -17,22 +39,31 @@ export async function action({ request }: ActionFunctionArgs) {
         return submission.reply();
     }
 
-    const newProject = await prisma.project.create({
+    const { slug } = params;
+    invariant(slug, 'Slug not found');
+
+    await prisma.project.update({
+        where: {
+            slug,
+        },
         data: {
             name: submission.value.name,
             slug: kebabCase(submission.value.name),
         },
     });
 
-    return redirect(`/projects/${newProject.slug}`);
+    return redirect(`/projects`);
 }
 
-export default function CreateProjectRoute() {
-    // Use this when we associat users & profiles
+export default function UpdateProjectRoute() {
+    // Use this when we associate users & profiles
     // const { isLoaded, userId, sessionId, getToken } = useAuth();
+    const { project } = useLoaderData<typeof loader>();
     const lastResult = useActionData<typeof action>();
+
     const [form, fields] = useForm({
         constraint: getZodConstraint(newProjectSchema),
+        defaultValue: project,
         lastResult,
         shouldRevalidate: 'onInput',
         shouldValidate: 'onBlur',
@@ -44,20 +75,14 @@ export default function CreateProjectRoute() {
     return (
         <>
             <Heading as="h1" className="mb-8 text-4xl font-black">
-                Create
+                Update
             </Heading>
-            <Form
-                method="POST"
-                className="space-y-4"
-                id={form.id}
-                onSubmit={form.onSubmit}
-                aria-invalid={form.errors ? true : undefined}
-                aria-describedby={form.errors ? form.errorId : undefined}
-            >
+            <Form method="POST" className="space-y-4" {...getFormProps(form)}>
                 <div id={form.errorId}>{form.errors}</div>
                 <Input
-                    {...getInputProps(fields.name, { type: 'text' })}
-                    description="Add your project name"
+                    {...getInputProps(fields.name, {
+                        type: 'text',
+                    })}
                     label="Project name"
                     placeholder="Patio renovation"
                     required
@@ -71,16 +96,17 @@ export default function CreateProjectRoute() {
                     {...getInputProps(fields.slug, { type: 'text' })}
                     readOnly
                     label="Slug"
+                    description="(Read only)"
                     placeholder="Slug will be automatically generated"
-                    required
                     value={kebabCase(form.value?.name)}
+                    required
                     helperText={
                         <div id={fields.slug.errorId} className="text-red-500">
                             {fields.slug.errors}
                         </div>
                     }
                 />
-                <Button type="submit">Create</Button>
+                <Button type="submit">Update</Button>
             </Form>
         </>
     );
