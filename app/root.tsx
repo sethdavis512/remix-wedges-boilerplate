@@ -7,7 +7,7 @@ import {
     ScrollRestoration,
     useRouteLoaderData,
 } from '@remix-run/react';
-import { dark } from '@clerk/themes';
+import { neobrutalism } from '@clerk/themes';
 
 import stylesheet from '~/tailwind.css?url';
 import { getThemeSession } from './utils/theme.server';
@@ -63,6 +63,6 @@ function App() {
 
 export default ClerkApp(App, {
     appearance: {
-        baseTheme: dark,
+        baseTheme: neobrutalism,
     },
 });

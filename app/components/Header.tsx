@@ -53,7 +53,7 @@ export default function Header() {
                             <span className="sr-only">
                                 Toggle to {activeTheme} theme
                             </span>
-                            {isThemeDark ? <Moon /> : <Sun />}
+                            {isThemeDark ? <Sun /> : <Moon />}
                         </Button>
                     </themeFetcher.Form>
                 </Flex>

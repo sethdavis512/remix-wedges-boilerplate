@@ -3,18 +3,22 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function main() {
-    try {
-        await prisma.project.deleteMany();
+    await prisma.project.deleteMany().catch(() => {});
+    await prisma.user.deleteMany().catch(() => {});
 
-        await prisma.project.create({
-            data: {
-                name: 'ABC',
-                slug: 'a-b-c',
-            },
-        });
-    } catch (error) {
-        console.log(error);
-    }
+    const user = await prisma.user.create({
+        data: {
+            email: 'user@mail.com',
+        },
+    });
+
+    await prisma.project.create({
+        data: {
+            name: 'A B C',
+            slug: 'a-b-c',
+            userId: user.id,
+        },
+    });
 }
 
 main()

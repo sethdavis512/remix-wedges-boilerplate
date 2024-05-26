@@ -16,4 +16,5 @@ export const newProjectSchema = z.object({
         .min(2)
         .max(50),
     slug: z.string({ required_error: 'Slug is required' }),
+    userId: z.string({ required_error: 'User ID is required' }),
 });

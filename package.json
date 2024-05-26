@@ -12,6 +12,7 @@
         "format": "prettier --write ."
     },
     "dependencies": {
+        "@clerk/clerk-react": "^5.2.1",
         "@clerk/remix": "^4.0.12",
         "@clerk/themes": "^2.1.7",
         "@conform-to/react": "^1.1.3",

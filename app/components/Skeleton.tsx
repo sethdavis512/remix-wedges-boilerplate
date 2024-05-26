@@ -32,7 +32,7 @@ export default function Skeleton({
                     className={cx(
                         sharedClasses,
                         'h-2.5 w-full',
-                        size === 'lg' && 'h-10',
+                        size === 'lg' && 'h-14',
                         className
                     )}
                 >
